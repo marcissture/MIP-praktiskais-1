@@ -1,5 +1,4 @@
 import tkinter as tk
-from tkinter import *
 from PIL import ImageTk, Image
 
 class UI:
@@ -66,7 +65,7 @@ class UI:
                 self.canvas.delete(widget)
 
     def exit_game(self):
-            self.root.destroy()
+        self.root.destroy()
 
     def run(self):
         self.root.mainloop()
