@@ -8,6 +8,11 @@ class UI:
         self.root.geometry("375x667")
         self.create_bg()
         self.create_ctrl()
+    
+    def clrscr(self):
+        for widget in self.canvas.find_all():
+            if widget != 1:  # 1 is typically the background image ID
+                self.canvas.delete(widget)
         
     def create_bg(self):
         # background img
@@ -60,15 +65,48 @@ class UI:
             self.count.set(self.count.get() - 1)
 
     def start_game(self):
-        for widget in self.canvas.find_all():
-            if widget != 1:  # 1 is typically the background image ID
-                self.canvas.delete(widget)
+        self.clrscr()
+        self.player_sel()
 
     def exit_game(self):
         self.root.destroy()
 
+    def player_sel(self):
+        human_image = Image.open("bin/human.png").resize((75, 75))
+        self.human_photo = ImageTk.PhotoImage(human_image)
+
+        computer_image = Image.open("bin/computer.png").resize((75, 75))
+        self.computer_photo = ImageTk.PhotoImage(computer_image)
+
+        human_btn = tk.Button(
+            self.root, 
+            image=self.human_photo,
+            borderwidth=0,
+            command=self.start_human,
+            bg="black"
+        )
+        
+        computer_btn = tk.Button(
+            self.root,
+            image=self.computer_photo,
+            borderwidth=0, 
+            command=self.start_computer,
+            bg="black"
+        )
+
+        self.canvas.create_window(187, 300, window=human_btn)
+        self.canvas.create_window(187, 400, window=computer_btn)
+
+    def start_computer(self):
+        self.clrscr()
+
+    def start_human(self):
+        self.clrscr()
+
     def run(self):
         self.root.mainloop()
+
+
 
 def main():
     game = UI()
