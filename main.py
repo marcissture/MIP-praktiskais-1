@@ -1,5 +1,6 @@
 import tkinter as tk
 from PIL import ImageTk, Image
+from tree import GameState, generate_game_tree
 
 class UI:
     def __init__(self):
@@ -8,17 +9,16 @@ class UI:
         self.root.geometry("375x667")
         self.create_bg()
         self.create_ctrl()
-    
+        self.game_state = None  # Sākotnēji spēles stāvoklis nav iestatīts
+
     def clrscr(self):
         for widget in self.canvas.find_all():
             if widget != 1:  # 1 is typically the background image ID
                 self.canvas.delete(widget)
         
     def create_bg(self):
-        # background img
         bg_image = Image.open("bin/background.png").resize((375, 667))
         self.bg_photo = ImageTk.PhotoImage(bg_image)
-        # Canvas 
         self.canvas = tk.Canvas(self.root, width=375, height=667)
         self.canvas.pack(fill="both", expand=True)
         self.canvas.create_image(0, 0, image=self.bg_photo, anchor="nw")
@@ -32,7 +32,6 @@ class UI:
 
         left_img = Image.open("bin/left.png").resize((50, 50))
         self.left_photo = ImageTk.PhotoImage(left_img)
-
         right_img = Image.open("bin/right.png").resize((50, 50))
         self.right_photo = ImageTk.PhotoImage(right_img)
 
@@ -48,7 +47,6 @@ class UI:
         start_img = Image.open("bin/start.png").resize((150, 50))
         self.start_photo = ImageTk.PhotoImage(start_img)
         start_btn = tk.Button(self.root, image=self.start_photo, borderwidth=0, command=self.start_game, bg="black")
-
         exit_img = Image.open("bin/exit.png").resize((150, 50))
         self.exit_photo = ImageTk.PhotoImage(exit_img)
         exit_btn = tk.Button(self.root, image=self.exit_photo, borderwidth=0, command=self.exit_game, bg="black")
@@ -66,6 +64,8 @@ class UI:
 
     def start_game(self):
         self.clrscr()
+        # self.game_state = GameState(self.count.get(), True, 0, 0)
+        # self.game_state = generate_game_tree(self.game_state, max_depth=5)
         self.player_sel()
 
     def exit_game(self):
@@ -74,7 +74,6 @@ class UI:
     def player_sel(self):
         human_image = Image.open("bin/human.png").resize((75, 75))
         self.human_photo = ImageTk.PhotoImage(human_image)
-
         computer_image = Image.open("bin/computer.png").resize((75, 75))
         self.computer_photo = ImageTk.PhotoImage(computer_image)
 
@@ -105,8 +104,6 @@ class UI:
 
     def run(self):
         self.root.mainloop()
-
-
 
 def main():
     game = UI()
