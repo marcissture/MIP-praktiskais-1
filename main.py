@@ -213,8 +213,8 @@ class GameUI:
         if stones_to_take not in [2, 3] or stones_to_take > self.game_state.stones:
             return
 
-        new_state, _ = player_move(self.game_state, stones_to_take)
-        self.game_state = new_state
+
+        self.game_state = player_move(self.game_state, stones_to_take)
 
         self.update_game_display()
 
