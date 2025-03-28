@@ -274,7 +274,7 @@ def player_move(state, stones_to_take):
     """Cilvēka gājiena izpilde"""
     # Pārbaudam, vai gājiens ir spēkā
     if stones_to_take not in [2, 3] or stones_to_take > state.stones:
-        return state, ""
+        return state
 
     # Izpildām gājienu
     new_stones = state.stones - stones_to_take
@@ -299,4 +299,4 @@ def player_move(state, stones_to_take):
         state.computer_stones
     )
 
-    return new_state, ""
+    return new_state
