@@ -313,8 +313,7 @@ class GameUI:
 
         # Galīgie punkti
         final_player_score = self.game_state.player_score + self.game_state.player_stones
-        final_computer_score = self.game_state.computer_score + \
-            self.game_state.computer_stones
+        final_computer_score = self.game_state.computer_score + self.game_state.computer_stones
 
         self.canvas.create_text(187, 340, text=f"Cilvēka gala punkti: {final_player_score}",
                                 fill="white", font=("Arial", 14))
