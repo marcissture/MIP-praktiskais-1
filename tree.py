@@ -29,67 +29,29 @@ class GameState:
             return "Neizšķirts!"
 
     def evaluate(self):
-        """Heiristiskā novērtējuma funkcija spēles stāvoklim"""
-        if self.is_terminal():
-            # Termināla stāvoklim aprēķinām faktisko vērtību
-            final_player_score = self.player_score + self.player_stones
-            final_computer_score = self.computer_score + self.computer_stones
-            # Pozitīva vērtība nozīmē labumu datoram
-            return final_computer_score - final_player_score
+        """
+        Novērtē stāvokli:
+        - Punktu starpība.
+        - Savākto akmeņu starpība.
+        - Paritātes bonuss: ja atlikušais akmeņu skaits izdevīgs datoram (nepāra), piešķir bonusu.
+        - Neliels endgame bonuss: tuvāk spēles beigām – svarīgāk novērtēt precīzāk.
+        """
+        
+        score_diff = (self.computer_score + self.computer_stones) - (self.player_score + self.player_stones)
 
-        # Pamata komponentes novērtējumā
-        score_diff = self.computer_score - self.player_score
-        stones_diff = self.computer_stones - self.player_stones
+        # Paritātes bonuss — dators grib nepāra atlikumu, cilvēks — pāra
+        if self.player_turn:  # tagadējais gājiens ir cilvēkam, tad dators gāja pirms tam
+            parity_bonus = -1 if self.stones % 2 == 0 else 1
+        else:  # tagadējais gājiens ir datoram, cilvēks gāja pirms tam
+            parity_bonus = 1 if self.stones % 2 == 0 else -1
 
-        # Novērtējam gājiena priekšrocību
-        turn_value = 0
-        if not self.player_turn:  # Datora gājiens
-            turn_value = 3  # Datora gājiens ir labvēlīgs datoram
+        if self.stones <= 10:
+            endgame_bonus = parity_bonus * 0.3  # tuvāk beigām – svarīgāk
         else:
-            turn_value = -3  # Cilvēka gājiens nav labvēlīgs datoram
+            endgame_bonus = 0
 
-        # Novērtējam paritātes kontroli
-        parity_control = 0
-        stones_left = self.stones
-
-        # Ja uz galda ir 2 vai 3 akmeņi, un ir datora gājiens, tas ir ļoti izdevīgi
-        if stones_left in [2, 3] and not self.player_turn:
-            parity_control = 30
-        # Ja uz galda ir 4 vai 5 akmeņi, un ir cilvēka gājiens, tas ir izdevīgi datoram
-        elif stones_left in [4, 5] and self.player_turn:
-            parity_control = 20
-
-        # Stratēģija atkarībā no atlikušo akmeņu skaita
-        stones_strategy = 0
-
-        # Ja akmentiņu skaits ir starp 6 un 12, mēģinām analizēt modulo 5 paritāti
-        if 6 <= stones_left <= 12:
-            # Ja atlikušais skaits % 5 == 0 vai % 5 == 1, tas parasti ir izdevīgi spēlētājam, kura gājiens nav
-            if stones_left % 5 in [0, 1]:
-                stones_strategy = 10 if self.player_turn else -10
-            # Ja atlikušais skaits % 5 == 2 vai % 5 == 3 vai % 5 == 4, tas parasti ir izdevīgi spēlētājam, kura gājiens ir
-            else:
-                stones_strategy = -10 if self.player_turn else 10
-
-        # Galējā posma stratēģija (mazāk nekā 10 akmeņu)
-        endgame_strategy = 0
-        if stones_left < 10:
-            # Atkarībā no tā, cik akmeņu atlicis, izvērtējam situāciju
-            if (stones_left - 2) % 5 == 0 or (stones_left - 3) % 5 == 0:
-                endgame_strategy = 15 if not self.player_turn else -15
-
-        # Aprēķinām kopējo novērtējumu
-        evaluation = (
-            score_diff * 2 +        # Punktu starpība (ar koeficientu)
-            stones_diff * 1 +       # Akmeņu starpība
-            turn_value +            # Gājiena priekšrocība
-            parity_control +        # Paritātes kontrole
-            stones_strategy +       # Akmeņu skaita stratēģija
-            endgame_strategy        # Gala posma stratēģija
-        )
-
-        return evaluation
-
+        self.value = round(score_diff + parity_bonus + endgame_bonus, 2)
+        return self.value
 
 def generate_game_tree(state, depth=0, max_depth=3, node_counter=None):
     """Ģenerē spēles koku ar noteiktu dziļumu"""
