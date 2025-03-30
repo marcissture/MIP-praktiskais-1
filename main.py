@@ -17,6 +17,8 @@ class GameUI:
         self.max_depth = 3  # Noklusējuma dziļums
         self.player_starts = True  # Noklusējuma vērtība - cilvēks sāk
         self.show_tree = False  # Vai rādīt koku kad dators domā
+        self.total_nodes = 0  # Kopējais mezglu skaits visai spēlei
+        self.total_time = 0.0  # Kopējais datora domāšanas laiks
 
     def clrscr(self):
         """Notīra ekrānu, saglabājot fona attēlu"""
@@ -238,9 +240,18 @@ class GameUI:
                 game_tree, f"Spēles koks - Datora gājiens (dziļums: {self.max_depth})")
 
         # Izpildām datora gājienu
-        self.game_state = computer_move(
+        next_state = computer_move(
             self.game_state, self.algorithm, self.max_depth)
 
+        # Iegūstam metrikas no pēdējā gājiena
+        metrics = getattr(next_state, "metrics", {})
+        node_count = metrics.get("node_count", 0)
+        duration = metrics.get("duration", 0.0)
+
+        self.total_nodes += node_count
+        self.total_time += duration
+
+        self.game_state = next_state
         # Atjauninām ekrānu
         self.update_game_display()
 
@@ -323,14 +334,28 @@ class GameUI:
         # Uzvarētājs
         self.canvas.create_text(187, 410, text=result,
                                 fill="cyan", font=("Arial", 18, "bold"))
+        
+        # Parādām algoritma metrikas
+        self.canvas.create_text(
+            187, 450,
+            text=f"Kopējais mezglu skaits: {self.total_nodes}",
+            fill="white", font=("Arial", 12)
+        )
+        self.canvas.create_text(
+            187, 480,
+            text=f"Kopējais laiks: {self.total_time:.4f} s",
+            fill="white", font=("Arial", 12)
+        )
 
         # Poga jaunai spēlei
         new_game_btn = tk.Button(self.root, text="Jauna spēle", command=self.new_game,
                                  bg="green", fg="white", font=("Arial", 14))
-        self.canvas.create_window(187, 470, window=new_game_btn)
+        self.canvas.create_window(187, 520, window=new_game_btn)
 
     def new_game(self):
         """Atgriežas uz sākuma ekrānu, lai sāktu jaunu spēli"""
+        self.total_nodes = 0
+        self.total_time = 0.0
         self.clrscr()
         self.create_ctrl()
 

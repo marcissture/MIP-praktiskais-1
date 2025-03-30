@@ -1,3 +1,4 @@
+import time
 class GameState:
     def __init__(self, stones, player_turn, player_score, computer_score, player_stones=0, computer_stones=0):
         self.stones = stones  # Akmeņu skaits uz galda
@@ -90,20 +91,18 @@ class GameState:
         return evaluation
 
 
-def generate_game_tree(state, depth=0, max_depth=3):
+def generate_game_tree(state, depth=0, max_depth=3, node_counter=None):
     """Ģenerē spēles koku ar noteiktu dziļumu"""
+    if node_counter is not None:
+        node_counter["count"] += 1
     # Aprēķinām heiristisko novērtējumu šim stāvoklim
     state.value = state.evaluate()
 
-    # Pārbaudam, vai esam sasnieguši gala stāvokli
-    if state.is_terminal():
+    # Pārbaudam, vai esam sasnieguši gala stāvokli, vai esam sasnieguši maksimālo dziļumu
+    if state.is_terminal() or depth >= max_depth:
         return state
 
-    # Pārbaudam, vai esam sasnieguši maksimālo dziļumu
-    if depth >= max_depth:
-        return state
-
-    possible_moves = [2, 3]  # Iespējamie gājieni
+    possible_moves = [2, 3] # Iespējamie gājieni
 
     for move in possible_moves:
         if state.stones >= move:
@@ -120,17 +119,16 @@ def generate_game_tree(state, depth=0, max_depth=3):
             else:
                 new_computer_stones += move
 
-            # Pievienojam punktus atkarībā no atlikušo akmeņu paritātes
-            if new_stones % 2 == 0:  # Pāra skaits
+            if new_stones % 2 == 0: # Pāra skaits
                 if state.player_turn:
-                    new_computer_score += 2  # Punkti datoram
+                    new_computer_score += 2 # Punkti datoram
                 else:
-                    new_player_score += 2  # Punkti cilvēkam
-            else:  # Nepāra skaits
+                    new_player_score += 2 # Punkti cilvēkam
+            else:
                 if state.player_turn:
-                    new_player_score += 2  # Punkti cilvēkam
+                    new_player_score += 2 # Punkti cilvēkam
                 else:
-                    new_computer_score += 2  # Punkti datoram
+                    new_computer_score += 2 # Punkti datoram
 
             # Izveidojam jaunu mezglu un turpinām koka ģenerāciju
             next_state = GameState(
@@ -142,12 +140,10 @@ def generate_game_tree(state, depth=0, max_depth=3):
                 new_computer_stones
             )
 
-            # Ģenerējam apakškoku šim stāvoklim
-            child_state = generate_game_tree(next_state, depth + 1, max_depth)
+            child_state = generate_game_tree(next_state, depth + 1, max_depth, node_counter)
             state.children.append(child_state)
 
     return state
-
 
 def minimax(state, depth, is_maximizing):
     """
@@ -256,8 +252,11 @@ def alpha_beta(state, depth, alpha, beta, is_maximizing):
 # Update the computer_move function to use these algorithms properly
 def computer_move(state, algorithm, max_depth=3):
     """Datora gājiena izpilde"""
+    start_time = time.time()
+    start_time = time.time()
+    node_counter = {"count": 0}
     # Ģenerējam koku no pašreizējā stāvokļa
-    game_tree = generate_game_tree(state, 0, max_depth)
+    game_tree = generate_game_tree(state, 0, max_depth, node_counter)
 
     # Izvēlamies gājienu, balstoties uz algoritmu
     if algorithm == "minimax":
@@ -266,6 +265,14 @@ def computer_move(state, algorithm, max_depth=3):
     else:  # alpha-beta
         best_child, _ = alpha_beta(
             game_tree, max_depth, float('-inf'), float('inf'), True)
+        
+    end_time = time.time()
+
+    # Save metrics
+    best_child.metrics = {
+        "node_count": node_counter["count"],
+        "duration": end_time - start_time
+    }
 
     return best_child  # Return the best state to move to
 
